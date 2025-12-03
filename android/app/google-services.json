@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "964445721846",
+    "project_id": "quad-connect-b4fa1",
+    "storage_bucket": "quad-connect-b4fa1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:964445721846:android:9c586289a3ac148bf948d7",
+        "android_client_info": {
+          "package_name": "com.example.quadconnect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABLCB3RqIrBx_WakNN4sY5j-WiB4d4XyA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
