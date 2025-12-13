@@ -44,7 +44,7 @@ class ProfilePage extends StatelessWidget {
         actions: isOwnProfile
             ? [
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert),
+                  icon: const Icon(Icons.settings),
                   onSelected: (value) async {
                     if (value == 'darkmode') {
                       await themeProvider.toggleTheme();
@@ -252,12 +252,15 @@ class ProfilePage extends StatelessWidget {
                     const SizedBox(height: 24),
                     // Posts Grid
                     if (posts.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(32.0),
+                      Padding(
+                        padding: const EdgeInsets.all(32.0),
                         child: Center(
                           child: Text(
                             'No posts yet',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
+                            ),
                           ),
                         ),
                       )

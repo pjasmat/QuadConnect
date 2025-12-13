@@ -12,6 +12,9 @@ class PostsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -47,14 +50,17 @@ class PostsGrid extends StatelessWidget {
                 memCacheWidth: 200, // Optimize for grid
                 memCacheHeight: 200,
                 placeholder: (context, url) => Container(
-                  color: Colors.grey[200],
+                  color: isDark ? Colors.grey[800] : Colors.grey[200],
                   child: const Center(
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.broken_image),
+                  color: isDark ? Colors.grey[700] : Colors.grey[300],
+                  child: Icon(
+                    Icons.broken_image,
+                    color: isDark ? Colors.grey[500] : Colors.grey[600],
+                  ),
                 ),
               ),
             ),
@@ -76,7 +82,7 @@ class PostsGrid extends StatelessWidget {
             );
           },
           child: Container(
-            color: Colors.grey[200],
+            color: isDark ? Colors.grey[800] : Colors.grey[200],
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -84,7 +90,10 @@ class PostsGrid extends StatelessWidget {
                   post.content.length > 50
                       ? '${post.content.substring(0, 50)}...'
                       : post.content,
-                  style: const TextStyle(fontSize: 12),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
