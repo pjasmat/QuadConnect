@@ -100,238 +100,252 @@ class _PostDetailPageState extends State<PostDetailPage> {
   }
 
   Widget _buildPostDetail(Post post, String? currentUid) {
-    return SizedBox(
-      width: double.infinity,
-      height: double.infinity,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Left side - Post content
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: FutureBuilder<Map<String, dynamic>?>(
-              future: UserService().getUser(post.uid),
-              builder: (context, userSnapshot) {
-                if (!userSnapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: FutureBuilder<Map<String, dynamic>?>(
+        future: UserService().getUser(post.uid),
+        builder: (context, userSnapshot) {
+          if (!userSnapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                final user = userSnapshot.data!;
-                final profilePic =
-                    user["photoUrl"] ?? user["profilePicUrl"] ?? "";
-                final userName = user["username"] ?? user["name"] ?? "";
-                final timeAgo = timeago.format(post.createdAt);
+          final user = userSnapshot.data!;
+          final profilePic =
+              user["photoUrl"] ?? user["profilePicUrl"] ?? "";
+          final userName = user["username"] ?? user["name"] ?? "";
+          final timeAgo = timeago.format(post.createdAt);
 
-                final isOwner = currentUid != null && post.uid == currentUid;
+          final isOwner = currentUid != null && post.uid == currentUid;
+          final isLiked = currentUid != null && post.likes.contains(currentUid);
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header with Settings Icon
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        ListTile(
-                          leading: CircleAvatar(
-                            radius: 25,
-                            backgroundColor: Colors.grey[300],
-                            backgroundImage: profilePic.isNotEmpty
-                                ? (profilePic.startsWith('data:image/')
-                                      ? MemoryImage(
-                                          base64Decode(profilePic.split(',')[1]),
-                                        )
-                                      : NetworkImage(profilePic))
-                                : null,
-                            child: profilePic.isEmpty
-                                ? const Icon(
-                                    Icons.person,
-                                    size: 30,
-                                    color: Colors.grey,
-                                  )
-                                : null,
-                          ),
-                          title: Text(
-                            userName,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          subtitle: Text(timeAgo),
-                        ),
-                        // Settings icon in top-right corner
-                        if (isOwner)
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: IconButton(
-                                icon: const Icon(Icons.more_vert),
-                                onPressed: () {
-                                  _showSettingsMenu(context, post);
-                                },
-                                tooltip: 'Post options',
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-
-                    // Post Image
-                    if (post.imageUrl != null && post.imageUrl!.isNotEmpty)
-                      CachedNetworkImage(
-                        imageUrl: post.imageUrl!,
-                        width: double.infinity,
-                        fit: BoxFit.contain,
-                        memCacheWidth: 800,
-                        placeholder: (context, url) => Container(
-                          height: 300,
-                          color: Colors.grey[200],
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          height: 300,
-                          color: Colors.grey[300],
-                          child: const Center(
-                            child: Icon(Icons.broken_image, size: 50),
-                          ),
-                        ),
-                      ),
-
-                    // Caption
-                    if (post.content.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        child: Text(
-                          post.content,
-                          style: const TextStyle(fontSize: 15, height: 1.5),
-                        ),
-                      ),
-
-                    const SizedBox(height: 20),
-                  ],
-                );
-              },
-            ),
-          ),
-        ),
-
-        // Right side - Actions and Comments
-        Container(
-          width: 80,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Like button
-              _buildActionButton(
-                icon: currentUid != null && post.likes.contains(currentUid)
-                    ? Icons.favorite
-                    : Icons.favorite_border,
-                color: Colors.red,
-                count: post.likes.length,
-                onTap: () {
-                  _postService.toggleLike(post.postId, post.likes);
-                  setState(() {}); // Refresh to show updated like status
-                },
-              ),
-              const SizedBox(height: 20),
-              // Comment button
-              StreamBuilder<List<Comment>>(
-                stream: CommentService().getComments(post.postId),
-                builder: (context, snapshot) {
-                  final commentCount = snapshot.hasData
-                      ? snapshot.data!.length
-                      : 0;
-                  return _buildActionButton(
-                    icon: Icons.comment_outlined,
-                    color: Colors.blue,
-                    count: commentCount,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CommentsPage(postId: post.postId),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              // Share button
-              _buildActionButton(
-                icon: Icons.share_outlined,
-                color: Colors.grey,
-                count: 0,
-                onTap: () async {
-                  try {
-                    final user = await UserService().getUser(post.uid);
-                    final userName = user?["username"] ?? user?["name"] ?? "";
-                    showModalBottomSheet(
-                      context: context,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => ShareBottomSheet(
-                        post: post,
-                        userName: userName,
+              // Header - Larger and more prominent
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.grey[300],
+                      backgroundImage: profilePic.isNotEmpty
+                          ? (profilePic.startsWith('data:image/')
+                                ? MemoryImage(
+                                    base64Decode(profilePic.split(',')[1]),
+                                  )
+                                : NetworkImage(profilePic))
+                          : null,
+                      child: profilePic.isEmpty
+                          ? const Icon(
+                              Icons.person,
+                              size: 30,
+                              color: Colors.grey,
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            userName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                              color: theme.textTheme.bodyLarge?.color,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            timeAgo,
+                            style: TextStyle(
+                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error sharing post: $e'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
-                },
+                    ),
+                  ],
+                ),
               ),
+
+              // Post Image - Larger and more prominent
+              if (post.imageUrl != null && post.imageUrl!.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(
+                    minHeight: 500,
+                    maxHeight: 700,
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl: post.imageUrl!,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    memCacheWidth: 1200,
+                    placeholder: (context, url) => Container(
+                      height: 500,
+                      color: Colors.grey[200],
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      height: 500,
+                      color: Colors.grey[300],
+                      child: const Center(
+                        child: Icon(Icons.broken_image, size: 80),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Caption - Larger text (without username)
+              if (post.content.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                  child: Text(
+                    post.content,
+                    style: TextStyle(
+                      color: theme.textTheme.bodyLarge?.color,
+                      fontSize: 18,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+
+              // ACTION BAR - Horizontal layout at bottom left
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: isLiked ? Colors.red : theme.iconTheme.color,
+                        size: 28,
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () {
+                        _postService.toggleLike(post.postId, post.likes);
+                        setState(() {}); // Refresh to show updated like status
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      icon: Icon(
+                        Icons.chat_bubble_outline,
+                        size: 28,
+                        color: theme.iconTheme.color,
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CommentsPage(postId: post.postId),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      icon: Icon(
+                        Icons.more_vert,
+                        size: 28,
+                        color: theme.iconTheme.color,
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () async {
+                        try {
+                          final user = await UserService().getUser(post.uid);
+                          final userName = user?["username"] ?? user?["name"] ?? "";
+                          showModalBottomSheet(
+                            context: context,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => ShareBottomSheet(
+                              post: post,
+                              userName: userName,
+                            ),
+                          );
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error sharing post: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              // LIKES COUNT - Larger
+              if (post.likes.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    '${post.likes.length} ${post.likes.length == 1 ? 'like' : 'likes'}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: theme.textTheme.bodyLarge?.color,
+                    ),
+                  ),
+                ),
+
+              // Divider before comments
+              Divider(
+                height: 32,
+                thickness: 1,
+                color: isDark ? Colors.grey[800] : Colors.grey[300],
+              ),
+              
+              // Comments Section - Keep small
+              Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+                child: Text(
+                  'Comments',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.grey[400] : Colors.grey[700],
+                  ),
+                ),
+              ),
+              
+              _buildCommentsSection(post.postId),
+
               const SizedBox(height: 20),
-              // Comments preview
-              _buildCommentsPreview(post.postId),
             ],
-          ),
-        ),
-      ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required Color color,
-    required int count,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 4),
-          Text(
-            count.toString(),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCommentsPreview(String postId) {
+  Widget _buildCommentsSection(String postId) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return StreamBuilder<List<Comment>>(
       stream: CommentService().getComments(postId),
       builder: (context, snapshot) {
@@ -341,56 +355,131 @@ class _PostDetailPageState extends State<PostDetailPage> {
 
         final comments = snapshot.data!;
         if (comments.isEmpty) {
-          return const SizedBox.shrink();
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CommentsPage(postId: postId),
+                  ),
+                );
+              },
+              child: Text(
+                'No comments yet. Tap to add one.',
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          );
         }
 
-        // Show only first 2-3 comments
-        final previewComments = comments.take(3).toList();
+        // Show first 5 comments, then "View all X comments" if there are more
+        final displayComments = comments.take(5).toList();
+        final hasMoreComments = comments.length > 5;
 
-        return Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: previewComments.map((comment) {
-                return FutureBuilder<Map<String, dynamic>?>(
-                  future: UserService().getUser(comment.uid),
-                  builder: (context, userSnapshot) {
-                    if (!userSnapshot.hasData) {
-                      return const SizedBox.shrink();
-                    }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Display comments
+            ...displayComments.map((comment) {
+              return FutureBuilder<Map<String, dynamic>?>(
+                future: UserService().getUser(comment.uid),
+                builder: (context, userSnapshot) {
+                  if (!userSnapshot.hasData) {
+                    return const SizedBox.shrink();
+                  }
 
-                    final user = userSnapshot.data!;
-                    final userName = user["username"] ?? user["name"] ?? "User";
+                  final user = userSnapshot.data!;
+                  final userName = user["username"] ?? user["name"] ?? "User";
+                  final commentTimeAgo = timeago.format(comment.createdAt);
 
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            userName,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          radius: 14,
+                          backgroundColor: Colors.grey[300],
+                          child: const Icon(
+                            Icons.person,
+                            size: 16,
+                            color: Colors.grey,
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            comment.text,
-                            style: const TextStyle(fontSize: 11),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  style: TextStyle(
+                                    color: theme.textTheme.bodyLarge?.color,
+                                    fontSize: 14,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: '$userName ',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    TextSpan(text: comment.text),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                commentTimeAgo,
+                                style: TextStyle(
+                                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              }).toList(),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            }),
+
+            // View all comments link
+            if (hasMoreComments)
+              Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 4,
+              ),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CommentsPage(postId: postId),
+                    ),
+                  );
+                },
+                child: Text(
+                  'View all ${comments.length} ${comments.length == 1 ? 'comment' : 'comments'}',
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         );
       },
     );

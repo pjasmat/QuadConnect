@@ -148,18 +148,23 @@ class _CommentsPageState extends State<CommentsPage> {
     final isOwner = currentUid == comment.uid;
     final isLiked = currentUid != null && comment.likes.contains(currentUid);
 
-    return FutureBuilder<Map<String, dynamic>?>(
-      future: UserService().getUser(comment.uid),
-      builder: (context, userSnapshot) {
-        if (!userSnapshot.hasData) {
-          return const SizedBox.shrink();
-        }
+    return Builder(
+      builder: (context) {
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+        
+        return FutureBuilder<Map<String, dynamic>?>(
+          future: UserService().getUser(comment.uid),
+          builder: (context, userSnapshot) {
+            if (!userSnapshot.hasData) {
+              return const SizedBox.shrink();
+            }
 
-        final user = userSnapshot.data!;
-        final userName = user["username"] ?? user["name"] ?? "Unknown User";
-        final profilePicUrl = user["photoUrl"] ?? user["profilePicUrl"] ?? "";
-        final timeAgo = timeago.format(comment.createdAt);
-        final isEdited = comment.editedAt != null;
+            final user = userSnapshot.data!;
+            final userName = user["username"] ?? user["name"] ?? "Unknown User";
+            final profilePicUrl = user["photoUrl"] ?? user["profilePicUrl"] ?? "";
+            final timeAgo = timeago.format(comment.createdAt);
+            final isEdited = comment.editedAt != null;
 
         return Container(
           margin: EdgeInsets.only(left: isReply ? 48.0 : 0, bottom: 8),
@@ -211,7 +216,7 @@ class _CommentsPageState extends State<CommentsPage> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
+                            color: isDark ? Colors.grey[800] : Colors.grey[100],
                             borderRadius: BorderRadius.circular(18),
                           ),
                           child: _editingCommentId == comment.commentId
@@ -235,9 +240,10 @@ class _CommentsPageState extends State<CommentsPage> {
                                           },
                                           child: Text(
                                             userName,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontWeight: FontWeight.w600,
                                               fontSize: 14,
+                                              color: theme.textTheme.bodyLarge?.color,
                                             ),
                                           ),
                                         ),
@@ -246,7 +252,7 @@ class _CommentsPageState extends State<CommentsPage> {
                                           timeAgo,
                                           style: TextStyle(
                                             fontSize: 12,
-                                            color: Colors.grey[600],
+                                            color: isDark ? Colors.grey[400] : Colors.grey[600],
                                           ),
                                         ),
                                         if (isEdited) ...[
@@ -255,7 +261,7 @@ class _CommentsPageState extends State<CommentsPage> {
                                             '• edited',
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: Colors.grey[600],
+                                              color: isDark ? Colors.grey[400] : Colors.grey[600],
                                               fontStyle: FontStyle.italic,
                                             ),
                                           ),
@@ -265,7 +271,10 @@ class _CommentsPageState extends State<CommentsPage> {
                                     const SizedBox(height: 4),
                                     Text(
                                       comment.text,
-                                      style: const TextStyle(fontSize: 14),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: theme.textTheme.bodyLarge?.color,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -299,7 +308,7 @@ class _CommentsPageState extends State<CommentsPage> {
                                         '${comment.likes.length}',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Colors.grey[600],
+                                          color: isDark ? Colors.grey[400] : Colors.grey[600],
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -334,7 +343,7 @@ class _CommentsPageState extends State<CommentsPage> {
                                     'Reply',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey[600],
+                                      color: isDark ? Colors.grey[400] : Colors.grey[600],
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -358,7 +367,7 @@ class _CommentsPageState extends State<CommentsPage> {
                                     'Edit',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey[600],
+                                      color: isDark ? Colors.grey[400] : Colors.grey[600],
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -408,6 +417,8 @@ class _CommentsPageState extends State<CommentsPage> {
             ],
           ),
         );
+          },
+        );
       },
     );
   }
@@ -432,7 +443,10 @@ class _CommentsPageState extends State<CommentsPage> {
               isDense: true,
               contentPadding: EdgeInsets.zero,
             ),
-            style: const TextStyle(fontSize: 14),
+            style: TextStyle(
+              fontSize: 14,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
+            ),
           ),
         ),
         TextButton(
@@ -445,13 +459,19 @@ class _CommentsPageState extends State<CommentsPage> {
               setState(() => _editingCommentId = null);
             }
           },
-          child: const Text('Save', style: TextStyle(fontSize: 12)),
+          child: Text(
+            'Save',
+            style: TextStyle(fontSize: 12),
+          ),
         ),
         TextButton(
           onPressed: () {
             setState(() => _editingCommentId = null);
           },
-          child: const Text('Cancel', style: TextStyle(fontSize: 12)),
+          child: Text(
+            'Cancel',
+            style: TextStyle(fontSize: 12),
+          ),
         ),
       ],
     );
@@ -460,17 +480,22 @@ class _CommentsPageState extends State<CommentsPage> {
   @override
   Widget build(BuildContext context) {
     final currentUid = _authService.currentUser?.uid;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
-        title: const Text(
+        title: Text(
           "Comments",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: theme.appBarTheme.foregroundColor,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: theme.iconTheme.color),
       ),
       body: Column(
         children: [
@@ -490,7 +515,10 @@ class _CommentsPageState extends State<CommentsPage> {
                           color: Colors.red,
                         ),
                         const SizedBox(height: 16),
-                        Text('Error loading comments: ${snapshot.error}'),
+                        Text(
+                          'Error loading comments: ${snapshot.error}',
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                        ),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () => setState(() {}),
@@ -515,14 +543,14 @@ class _CommentsPageState extends State<CommentsPage> {
                         Icon(
                           Icons.comment_outlined,
                           size: 64,
-                          color: Colors.grey[300],
+                          color: isDark ? Colors.grey[600] : Colors.grey[300],
                         ),
                         const SizedBox(height: 16),
                         Text(
                           "No comments yet.\nBe the first to comment!",
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
                             fontSize: 16,
                           ),
                         ),
@@ -555,19 +583,30 @@ class _CommentsPageState extends State<CommentsPage> {
           if (_replyingToCommentId != null && _replyingToUserName != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.grey[100],
+              color: isDark ? Colors.grey[800] : Colors.grey[100],
               child: Row(
                 children: [
-                  Icon(Icons.reply, size: 16, color: Colors.grey[600]),
+                  Icon(
+                    Icons.reply,
+                    size: 16,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Replying to $_replyingToUserName',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, size: 18),
+                    icon: Icon(
+                      Icons.close,
+                      size: 18,
+                      color: theme.iconTheme.color,
+                    ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () {
@@ -586,8 +625,12 @@ class _CommentsPageState extends State<CommentsPage> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border(top: BorderSide(color: Colors.grey[200]!)),
+                color: theme.colorScheme.surface,
+                border: Border(
+                  top: BorderSide(
+                    color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+                  ),
+                ),
               ),
               child: SafeArea(
                 child: Row(
@@ -605,18 +648,28 @@ class _CommentsPageState extends State<CommentsPage> {
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
+                            borderSide: BorderSide(
+                              color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(color: Colors.blue),
+                            borderSide: BorderSide(
+                              color: theme.colorScheme.primary,
+                            ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 12,
                           ),
                           filled: true,
-                          fillColor: Colors.grey[50],
+                          fillColor: isDark ? Colors.grey[800] : Colors.grey[50],
+                          hintStyle: TextStyle(
+                            color: isDark ? Colors.grey[500] : Colors.grey[600],
+                          ),
+                        ),
+                        style: TextStyle(
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                         maxLines: null,
                         textInputAction: TextInputAction.send,

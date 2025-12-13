@@ -17,6 +17,9 @@ class FeedItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     if (isPost) {
       return InstagramPostCard(post: item as Post);
     } else {
@@ -27,11 +30,11 @@ class FeedItem extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: Colors.grey[300]!,
+              color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
               width: 1,
             ),
           ),
-          color: Colors.white,
+          color: theme.cardTheme.color ?? theme.colorScheme.surface,
         ),
         child: InkWell(
           onTap: () {
@@ -70,9 +73,10 @@ class FeedItem extends StatelessWidget {
                         children: [
                           Text(
                             event.title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
+                              color: theme.textTheme.bodyLarge?.color,
                             ),
                           ),
                           if (event.category != null) ...[
@@ -81,7 +85,7 @@ class FeedItem extends StatelessWidget {
                               event.category!,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey[600],
+                                color: isDark ? Colors.grey[400] : Colors.grey[600],
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -118,7 +122,7 @@ class FeedItem extends StatelessWidget {
                         : event.description,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[700],
+                      color: isDark ? Colors.grey[300] : Colors.grey[700],
                       height: 1.4,
                     ),
                     maxLines: 3,
@@ -133,14 +137,18 @@ class FeedItem extends StatelessWidget {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+                        Icon(
+                          Icons.location_on,
+                          size: 14,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        ),
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
                             event.location,
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color: isDark ? Colors.grey[400] : Colors.grey[600],
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -150,13 +158,17 @@ class FeedItem extends StatelessWidget {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
+                        Icon(
+                          Icons.access_time,
+                          size: 14,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           DateFormat('MMM dd, yyyy • hh:mm a').format(event.date),
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
                           ),
                         ),
                       ],
@@ -164,7 +176,11 @@ class FeedItem extends StatelessWidget {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.people, size: 14, color: Colors.grey[600]),
+                        Icon(
+                          Icons.people,
+                          size: 14,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           event.capacity != null
@@ -172,7 +188,7 @@ class FeedItem extends StatelessWidget {
                               : '${event.attendees.length}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
                           ),
                         ),
                       ],

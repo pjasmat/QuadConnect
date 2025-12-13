@@ -33,6 +33,9 @@ class InstagramPostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return FutureBuilder<Map<String, dynamic>?>(
       future: UserService().getUser(post.uid),
       builder: (context, userSnapshot) {
@@ -49,11 +52,11 @@ class InstagramPostCard extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: Colors.grey[300]!,
+                color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
                 width: 1,
               ),
             ),
-            color: Colors.white,
+            color: theme.cardTheme.color ?? theme.colorScheme.surface,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,9 +107,10 @@ class InstagramPostCard extends StatelessWidget {
                       },
                       child: Text(
                         userName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                     ),
@@ -247,7 +251,10 @@ class InstagramPostCard extends StatelessWidget {
                 ),
                 child: Text(
                   post.content,
-                  style: const TextStyle(fontSize: 15),
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
                 ),
               ),
 
@@ -259,7 +266,7 @@ class InstagramPostCard extends StatelessWidget {
                   IconButton(
                     icon: Icon(
                       isLiked ? Icons.favorite : Icons.favorite_border,
-                      color: isLiked ? Colors.red : Colors.black,
+                      color: isLiked ? Colors.red : theme.iconTheme.color,
                       size: 28,
                     ),
                     padding: EdgeInsets.zero,
@@ -275,7 +282,11 @@ class InstagramPostCard extends StatelessWidget {
                         .map((comments) => comments.length),
                     builder: (context, snapshot) {
                       return IconButton(
-                        icon: const Icon(Icons.chat_bubble_outline, size: 28),
+                        icon: Icon(
+                          Icons.chat_bubble_outline,
+                          size: 28,
+                          color: theme.iconTheme.color,
+                        ),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                         onPressed: () {
@@ -291,7 +302,11 @@ class InstagramPostCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   IconButton(
-                    icon: const Icon(Icons.more_vert, size: 28),
+                    icon: Icon(
+                      Icons.more_vert,
+                      size: 28,
+                      color: theme.iconTheme.color,
+                    ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () {
@@ -318,9 +333,10 @@ class InstagramPostCard extends StatelessWidget {
                 ),
                 child: Text(
                   '${post.likes.length} ${post.likes.length == 1 ? 'like' : 'likes'}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
+                    color: theme.textTheme.bodyLarge?.color,
                   ),
                 ),
               ),
@@ -337,7 +353,10 @@ class InstagramPostCard extends StatelessWidget {
                 ),
                 child: RichText(
                   text: TextSpan(
-                    style: const TextStyle(color: Colors.black, fontSize: 14),
+                    style: TextStyle(
+                      color: theme.textTheme.bodyLarge?.color,
+                      fontSize: 14,
+                    ),
                     children: [
                       TextSpan(
                         text: '$userName ',
@@ -373,7 +392,10 @@ class InstagramPostCard extends StatelessWidget {
                       },
                       child: Text(
                         'View all $commentCount ${commentCount == 1 ? 'comment' : 'comments'}',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   );
@@ -387,7 +409,10 @@ class InstagramPostCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: Text(
                 timeAgo,
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 12,
+                ),
               ),
             ),
 

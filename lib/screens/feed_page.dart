@@ -18,10 +18,13 @@ class FeedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: StreamBuilder<QuerySnapshot>(
           stream: FirebaseAuth.instance.currentUser != null
@@ -44,9 +47,9 @@ class FeedPage extends StatelessWidget {
             return IconButton(
               icon: Stack(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.notifications_outlined,
-                    color: Colors.black,
+                    color: theme.iconTheme.color,
                     size: 28,
                   ),
                   if (unreadCount > 0)
@@ -85,10 +88,10 @@ class FeedPage extends StatelessWidget {
             );
           },
         ),
-        title: const Text(
+        title: Text(
           "QuadConnect",
           style: TextStyle(
-            color: Colors.black,
+            color: theme.appBarTheme.foregroundColor,
             fontSize: 24,
             fontWeight: FontWeight.bold,
             letterSpacing: -0.5,
@@ -97,9 +100,9 @@ class FeedPage extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.add_box_outlined,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 28,
             ),
             onPressed: () {
@@ -126,7 +129,10 @@ class FeedPage extends StatelessWidget {
                       color: Colors.red,
                     ),
                     const SizedBox(height: 16),
-                    Text('Error loading posts: ${snapshot.error}'),
+                    Text(
+                      'Error loading posts: ${snapshot.error}',
+                      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                    ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
@@ -188,15 +194,22 @@ class FeedPage extends StatelessWidget {
                 });
 
                 if (feedItems.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.feed, size: 64, color: Colors.grey),
-                        SizedBox(height: 16),
+                        Icon(
+                          Icons.feed,
+                          size: 64,
+                          color: theme.textTheme.bodyMedium?.color ?? Colors.grey,
+                        ),
+                        const SizedBox(height: 16),
                         Text(
                           "No posts or events yet",
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: theme.textTheme.bodyMedium?.color ?? Colors.grey,
+                          ),
                         ),
                       ],
                     ),

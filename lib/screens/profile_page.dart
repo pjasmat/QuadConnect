@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import 'package:cached_network_image/cached_network_image.dart';
 import '../services/auth_service.dart';
@@ -8,6 +9,7 @@ import '../services/user_service.dart';
 import '../widgets/profile/posts_grid.dart';
 import '../models/post_model.dart';
 import '../models/user_model.dart';
+import '../providers/theme_provider.dart';
 import 'login_page.dart';
 import 'edit_profile_page.dart';
 import 'chat_page.dart';
@@ -31,6 +33,10 @@ class ProfilePage extends StatelessWidget {
 
     final authService = AuthService();
     final isOwnProfile = userId == null || userId == currentUid;
+    
+    // Get theme provider in build method where context is available
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: true);
+    final isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
       appBar: AppBar(
@@ -40,7 +46,9 @@ class ProfilePage extends StatelessWidget {
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert),
                   onSelected: (value) async {
-                    if (value == 'logout') {
+                    if (value == 'darkmode') {
+                      await themeProvider.toggleTheme();
+                    } else if (value == 'logout') {
                       // Show confirmation dialog
                       final shouldLogout = await showDialog<bool>(
                         context: context,
@@ -75,18 +83,33 @@ class ProfilePage extends StatelessWidget {
                       }
                     }
                   },
-                  itemBuilder: (BuildContext context) => [
-                    const PopupMenuItem<String>(
-                      value: 'logout',
-                      child: Row(
-                        children: [
-                          Icon(Icons.logout, size: 20),
-                          SizedBox(width: 8),
-                          Text('Logout'),
-                        ],
+                  itemBuilder: (BuildContext menuContext) {
+                    return [
+                      PopupMenuItem<String>(
+                        value: 'darkmode',
+                        child: Row(
+                          children: [
+                            Icon(
+                              isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(isDarkMode ? 'Light Mode' : 'Dark Mode'),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      const PopupMenuItem<String>(
+                        value: 'logout',
+                        child: Row(
+                          children: [
+                            Icon(Icons.logout, size: 20),
+                            SizedBox(width: 8),
+                            Text('Logout'),
+                          ],
+                        ),
+                      ),
+                    ];
+                  },
                 ),
               ]
             : [],
