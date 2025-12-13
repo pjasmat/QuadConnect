@@ -45,9 +45,19 @@ class InstagramPostCard extends StatelessWidget {
         final currentUid = _postService.currentUid;
         final isLiked = currentUid != null && post.likes.contains(currentUid);
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        return Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.grey[300]!,
+                width: 1,
+              ),
+            ),
+            color: Colors.white,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // HEADER - Instagram style
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -105,174 +115,167 @@ class InstagramPostCard extends StatelessWidget {
               ),
             ),
 
-            // POST CONTENT WITH ACTION BUTTONS - Right side layout
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // POST IMAGE/VIDEO/CONTENT (Left side - expanded)
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // POST IMAGE (show first if exists) - Instagram style (square aspect ratio)
-                      if (post.imageUrl != null && post.imageUrl!.isNotEmpty)
-                        GestureDetector(
-                          onDoubleTap: () {
-                            _postService.toggleLike(post.postId, post.likes);
-                          },
-                          child: AspectRatio(
-                            aspectRatio: 1.0,
-                            child: CachedNetworkImage(
-                              imageUrl: post.imageUrl!,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                width: double.infinity,
-                                color: Colors.grey[200],
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                width: double.infinity,
-                                color: Colors.grey[300],
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.broken_image,
-                                    size: 64,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ),
-                              memCacheWidth: 400, // Optimize memory usage
-                              memCacheHeight: 400,
-                            ),
-                          ),
+            // POST IMAGE (show first if exists) - Instagram style (square aspect ratio)
+            if (post.imageUrl != null && post.imageUrl!.isNotEmpty)
+              GestureDetector(
+                onDoubleTap: () {
+                  _postService.toggleLike(post.postId, post.likes);
+                },
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: CachedNetworkImage(
+                    imageUrl: post.imageUrl!,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      width: double.infinity,
+                      color: Colors.grey[200],
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      width: double.infinity,
+                      color: Colors.grey[300],
+                      child: const Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          size: 64,
+                          color: Colors.grey,
                         ),
-
-                      // POST VIDEO (show if exists and no image) - Instagram style
-                      if (post.videoUrl != null &&
-                          post.videoUrl!.isNotEmpty &&
-                          (post.imageUrl == null || post.imageUrl!.isEmpty))
-                        GestureDetector(
-                          onDoubleTap: () {
-                            _postService.toggleLike(post.postId, post.likes);
-                          },
-                          child: AspectRatio(
-                            aspectRatio: 1.0,
-                            child: Container(
-                              width: double.infinity,
-                              color: Colors.black,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  // Video thumbnail or placeholder
-                                  const Icon(
-                                    Icons.play_circle_filled,
-                                    size: 64,
-                                    color: Colors.white,
-                                  ),
-                                  Positioned(
-                                    bottom: 8,
-                                    right: 8,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black54,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.videocam,
-                                            size: 16,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            'Video',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-
-                      // POST CONTENT WITH BACKGROUND (for text-only posts with background)
-                      if (post.backgroundColor != null &&
-                          post.backgroundColor!.isNotEmpty &&
-                          (post.imageUrl == null || post.imageUrl!.isEmpty) &&
-                          (post.videoUrl == null || post.videoUrl!.isEmpty))
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: _parseColor(post.backgroundColor!),
-                          ),
-                          child: Text(
-                            post.content,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: _getTextColorForBackground(
-                                _parseColor(post.backgroundColor!),
-                              ),
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ),
-
-                      // POST CONTENT (for plain text posts without images/videos/background)
-                      if (post.content.isNotEmpty &&
-                          (post.imageUrl == null || post.imageUrl!.isEmpty) &&
-                          (post.videoUrl == null || post.videoUrl!.isEmpty) &&
-                          (post.backgroundColor == null ||
-                              post.backgroundColor!.isEmpty))
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          child: Text(
-                            post.content,
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                        ),
-                    ],
+                      ),
+                    ),
+                    memCacheWidth: 400, // Optimize memory usage
+                    memCacheHeight: 400,
                   ),
                 ),
+              ),
 
-                // ACTION BAR - Vertical layout on right side
-                Padding(
-                  padding: const EdgeInsets.only(right: 8, top: 8),
-                  child: Column(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          isLiked ? Icons.favorite : Icons.favorite_border,
-                          color: isLiked ? Colors.red : Colors.black,
-                          size: 24,
+            // POST VIDEO (show if exists and no image) - Instagram style
+            if (post.videoUrl != null &&
+                post.videoUrl!.isNotEmpty &&
+                (post.imageUrl == null || post.imageUrl!.isEmpty))
+              GestureDetector(
+                onDoubleTap: () {
+                  _postService.toggleLike(post.postId, post.likes);
+                },
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: Container(
+                    width: double.infinity,
+                    color: Colors.black,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Video thumbnail or placeholder
+                        const Icon(
+                          Icons.play_circle_filled,
+                          size: 64,
+                          color: Colors.white,
                         ),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: () {
-                          _postService.toggleLike(post.postId, post.likes);
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      IconButton(
-                        icon: const Icon(Icons.chat_bubble_outline, size: 24),
+                        Positioned(
+                          bottom: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.videocam,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Video',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // POST CONTENT WITH BACKGROUND (for text-only posts with background)
+            if (post.backgroundColor != null &&
+                post.backgroundColor!.isNotEmpty &&
+                (post.imageUrl == null || post.imageUrl!.isEmpty) &&
+                (post.videoUrl == null || post.videoUrl!.isEmpty))
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _parseColor(post.backgroundColor!),
+                ),
+                child: Text(
+                  post.content,
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: _getTextColorForBackground(
+                      _parseColor(post.backgroundColor!),
+                    ),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+
+            // POST CONTENT (for plain text posts without images/videos/background)
+            if (post.content.isNotEmpty &&
+                (post.imageUrl == null || post.imageUrl!.isEmpty) &&
+                (post.videoUrl == null || post.videoUrl!.isEmpty) &&
+                (post.backgroundColor == null ||
+                    post.backgroundColor!.isEmpty))
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Text(
+                  post.content,
+                  style: const TextStyle(fontSize: 15),
+                ),
+              ),
+
+            // ACTION BAR - Horizontal layout at bottom left
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      isLiked ? Icons.favorite : Icons.favorite_border,
+                      color: isLiked ? Colors.red : Colors.black,
+                      size: 28,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () {
+                      _postService.toggleLike(post.postId, post.likes);
+                    },
+                  ),
+                  const SizedBox(width: 4),
+                  StreamBuilder<int>(
+                    stream: _commentService
+                        .getComments(post.postId)
+                        .map((comments) => comments.length),
+                    builder: (context, snapshot) {
+                      return IconButton(
+                        icon: const Icon(Icons.chat_bubble_outline, size: 28),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                         onPressed: () {
@@ -283,27 +286,27 @@ class InstagramPostCard extends StatelessWidget {
                             ),
                           );
                         },
-                      ),
-                      const SizedBox(height: 8),
-                      IconButton(
-                        icon: const Icon(Icons.send_outlined, size: 24),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: () {
-                          showModalBottomSheet(
-                            context: context,
-                            backgroundColor: Colors.transparent,
-                            builder: (context) => ShareBottomSheet(
-                              post: post,
-                              userName: userName,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                ),
-              ],
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: const Icon(Icons.more_vert, size: 28),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => ShareBottomSheet(
+                          post: post,
+                          userName: userName,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
 
             // LIKES COUNT - Instagram style
@@ -323,7 +326,10 @@ class InstagramPostCard extends StatelessWidget {
               ),
 
             // CAPTION - Instagram style (username + caption)
-            if (post.content.isNotEmpty)
+            if (post.content.isNotEmpty &&
+                (post.imageUrl != null && post.imageUrl!.isNotEmpty ||
+                    post.videoUrl != null && post.videoUrl!.isNotEmpty ||
+                    post.backgroundColor != null && post.backgroundColor!.isNotEmpty))
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -387,6 +393,7 @@ class InstagramPostCard extends StatelessWidget {
 
             const SizedBox(height: 8),
           ],
+        ),
         );
       },
     );
