@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../screens/feed_page.dart';
 import '../screens/messages_page.dart';
-import '../screens/create_post_page.dart';
 import '../screens/profile_page.dart';
 import '../screens/events_page.dart';
+import '../screens/search_page.dart';
 
 class BottomNav extends StatefulWidget {
   const BottomNav({super.key});
@@ -17,8 +17,8 @@ class _BottomNavState extends State<BottomNav> {
 
   final List<Widget> _screens = [
     FeedPage(),
+    const SearchPage(),
     const EventsPage(),
-    const CreatePostPage(),
     const MessagesPage(),
     const ProfilePage(),
   ];
@@ -44,14 +44,14 @@ class _BottomNavState extends State<BottomNav> {
             label: "Home",
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.search_outlined),
+            activeIcon: Icon(Icons.search),
+            label: "Search",
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.event_outlined),
             activeIcon: Icon(Icons.event),
             label: "Events",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_box_outlined),
-            activeIcon: Icon(Icons.add_box),
-            label: "Post",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.message_outlined),
