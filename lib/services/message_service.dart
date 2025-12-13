@@ -32,13 +32,67 @@ class MessageService {
       return const Stream.empty();
     }
 
-    return _db
+    // Firestore doesn't allow multiple whereIn filters, so we need to use two separate queries
+    // Query 1: Messages where current user is sender and userId is receiver
+    final stream1 = _db
         .collection("messages")
-        .where("senderId", whereIn: [currentId, userId])
-        .where("receiverId", whereIn: [currentId, userId])
+        .where("senderId", isEqualTo: currentId)
+        .where("receiverId", isEqualTo: userId)
         .orderBy("createdAt", descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((doc) => ChatMessage.fromMap(doc.data())).toList());
+        .map((snap) => snap.docs.map((doc) => ChatMessage.fromMap(doc.data())).toList());
+
+    // Query 2: Messages where userId is sender and current user is receiver
+    final stream2 = _db
+        .collection("messages")
+        .where("senderId", isEqualTo: userId)
+        .where("receiverId", isEqualTo: currentId)
+        .orderBy("createdAt", descending: true)
+        .snapshots()
+        .map((snap) => snap.docs.map((doc) => ChatMessage.fromMap(doc.data())).toList());
+
+    // Combine both streams and merge the results in real-time
+    return Stream.multi((controller) {
+      List<ChatMessage> messages1 = [];
+      List<ChatMessage> messages2 = [];
+
+      void emitCombined() {
+        // Combine and remove duplicates
+        final allMessages = <String, ChatMessage>{};
+        for (var msg in messages1) {
+          allMessages[msg.messageId] = msg;
+        }
+        for (var msg in messages2) {
+          allMessages[msg.messageId] = msg;
+        }
+        
+        // Sort by createdAt descending
+        final sortedMessages = allMessages.values.toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        
+        controller.add(sortedMessages);
+      }
+
+      final sub1 = stream1.listen(
+        (messages) {
+          messages1 = messages;
+          emitCombined();
+        },
+        onError: controller.addError,
+      );
+
+      final sub2 = stream2.listen(
+        (messages) {
+          messages2 = messages;
+          emitCombined();
+        },
+        onError: controller.addError,
+      );
+
+      controller.onCancel = () {
+        sub1.cancel();
+        sub2.cancel();
+      };
+    });
   }
 }

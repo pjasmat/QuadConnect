@@ -40,6 +40,24 @@ class AuthService {
   Future<String?> loginUser(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
+      
+      // Ensure user document exists in Firestore (in case user signed up before Firestore was enabled)
+      final user = _auth.currentUser;
+      if (user != null) {
+        final userDoc = await _db.collection("users").doc(user.uid).get();
+        if (!userDoc.exists) {
+          // Create user document if it doesn't exist
+          await _db.collection("users").doc(user.uid).set({
+            "uid": user.uid,
+            "name": user.displayName ?? user.email?.split('@')[0] ?? "User",
+            "email": user.email ?? "",
+            "bio": "",
+            "profilePicUrl": "",
+            "createdAt": Timestamp.now(),
+          });
+        }
+      }
+      
       return null; // success
     } catch (e) {
       return e.toString();

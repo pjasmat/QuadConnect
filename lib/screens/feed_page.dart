@@ -30,6 +30,26 @@ class FeedPage extends StatelessWidget {
         child: StreamBuilder<List<Post>>(
           stream: _postService.getPosts(),
           builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text('Error loading posts: ${snapshot.error}'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Trigger rebuild
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
+            }
+
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -44,7 +64,12 @@ class FeedPage extends StatelessWidget {
               itemCount: posts.length,
               itemBuilder: (context, index) {
                 final post = posts[index];
-                return InstagramPostCard(post: post);
+                try {
+                  return InstagramPostCard(post: post);
+                } catch (e) {
+                  // Skip invalid posts
+                  return const SizedBox.shrink();
+                }
               },
             );
           },

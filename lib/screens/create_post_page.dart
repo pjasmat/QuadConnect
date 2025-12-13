@@ -51,11 +51,33 @@ class _CreatePostPageState extends State<CreatePostPage> {
                       try {
                         await _postService.createPost(content);
                         if (!mounted) return;
-                        navigator.pop();
+                        
+                        // Clear the text field
+                        postController.clear();
+                        
+                        // Show success message
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text("Post created successfully!"),
+                            backgroundColor: Colors.green,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                        
+                        // Only pop if we can (i.e., if this page was pushed, not part of bottom nav)
+                        if (navigator.canPop()) {
+                          await Future.delayed(const Duration(milliseconds: 300));
+                          if (!mounted) return;
+                          navigator.pop();
+                        }
                       } catch (e) {
                         if (!mounted) return;
                         messenger.showSnackBar(
-                          SnackBar(content: Text("Could not create post: $e")),
+                          SnackBar(
+                            content: Text("Could not create post: $e"),
+                            backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 3),
+                          ),
                         );
                       } finally {
                         if (mounted) {

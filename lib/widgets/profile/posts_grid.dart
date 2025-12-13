@@ -20,6 +20,11 @@ class PostsGrid extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final post = posts[index];
+        // Only show posts with images
+        if (post.imageUrl == null || post.imageUrl!.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -34,6 +39,12 @@ class PostsGrid extends StatelessWidget {
             child: Image.network(
               post.imageUrl!,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.broken_image),
+                );
+              },
             ),
           ),
         );
