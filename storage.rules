@@ -1,0 +1,85 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the file
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ============================================
+    // PROFILE IMAGES
+    // ============================================
+    match /profile_images/{userId}_{timestamp}.jpg {
+      // Anyone can read profile images
+      allow read: if true;
+      
+      // Only authenticated users can upload
+      // User can only upload their own profile image
+      allow write: if isAuthenticated() && 
+        userId == request.auth.uid;
+    }
+    
+    // ============================================
+    // POST IMAGES
+    // ============================================
+    match /images/{userId}_{timestamp}.jpg {
+      // Anyone can read post images
+      allow read: if true;
+      
+      // Only authenticated users can upload
+      // User can only upload to their own folder
+      allow write: if isAuthenticated() && 
+        userId == request.auth.uid;
+    }
+    
+    // ============================================
+    // POST VIDEOS
+    // ============================================
+    match /videos/{userId}_{timestamp}.mp4 {
+      // Anyone can read post videos
+      allow read: if true;
+      
+      // Only authenticated users can upload
+      // User can only upload to their own folder
+      allow write: if isAuthenticated() && 
+        userId == request.auth.uid;
+    }
+    
+    // ============================================
+    // EVENT IMAGES
+    // ============================================
+    match /event_images/{userId}_{timestamp}.jpg {
+      // Anyone can read event images
+      allow read: if true;
+      
+      // Only authenticated users can upload
+      allow write: if isAuthenticated();
+    }
+    
+    // ============================================
+    // MESSAGE IMAGES
+    // ============================================
+    match /messages/{userId}_{timestamp}.jpg {
+      // Only sender and receiver can read message images
+      allow read: if isAuthenticated();
+      
+      // Only authenticated users can upload
+      // User can only upload to their own folder
+      allow write: if isAuthenticated() && 
+        userId == request.auth.uid;
+    }
+    
+    // ============================================
+    // DEFAULT: Deny all other paths
+    // ============================================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
