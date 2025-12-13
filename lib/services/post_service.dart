@@ -74,13 +74,25 @@ class PostService {
   }
 
   Stream<List<Post>> getPostsByUser(String uid) {
+    // Fetch posts and sort client-side to avoid composite index requirement
     return _db
         .collection("posts")
         .where("uid", isEqualTo: uid)
-        .orderBy("createdAt", descending: true)
         .snapshots()
         .map(
-          (snap) => snap.docs.map((doc) => Post.fromMap(doc.data())).toList(),
+          (snap) {
+            final posts = snap.docs.map((doc) {
+              try {
+                return Post.fromMap(doc.data());
+              } catch (e) {
+                // Skip invalid posts
+                return null;
+              }
+            }).whereType<Post>().toList();
+            // Sort by createdAt descending (newest first)
+            posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+            return posts;
+          },
         );
   }
 }
