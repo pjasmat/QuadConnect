@@ -52,8 +52,21 @@ class PostService {
         .orderBy("createdAt", descending: true)
         .snapshots()
         .map(
-          (snapshot) =>
-              snapshot.docs.map((doc) => Post.fromMap(doc.data())).toList(),
+          (snapshot) {
+            final posts = snapshot.docs.map((doc) {
+              try {
+                final data = doc.data();
+                // Ensure we have the document ID in the data
+                data["postId"] = doc.id;
+                return Post.fromMap(data);
+              } catch (e) {
+                // Skip invalid posts and log error
+                print("Error parsing post ${doc.id}: $e");
+                return null;
+              }
+            }).whereType<Post>().toList();
+            return posts;
+          },
         );
   }
 
@@ -68,8 +81,19 @@ class PostService {
     }
 
     return query.snapshots().map(
-          (snapshot) =>
-              snapshot.docs.map((doc) => Post.fromMap(doc.data())).toList(),
+          (snapshot) {
+            final posts = snapshot.docs.map((doc) {
+              try {
+                final data = doc.data();
+                data["postId"] = doc.id;
+                return Post.fromMap(data);
+              } catch (e) {
+                print("Error parsing post ${doc.id}: $e");
+                return null;
+              }
+            }).whereType<Post>().toList();
+            return posts;
+          },
         );
   }
 
@@ -83,9 +107,12 @@ class PostService {
           (snap) {
             final posts = snap.docs.map((doc) {
               try {
-                return Post.fromMap(doc.data());
+                final data = doc.data();
+                data["postId"] = doc.id;
+                return Post.fromMap(data);
               } catch (e) {
-                // Skip invalid posts
+                // Skip invalid posts and log error
+                print("Error parsing post ${doc.id}: $e");
                 return null;
               }
             }).whereType<Post>().toList();
