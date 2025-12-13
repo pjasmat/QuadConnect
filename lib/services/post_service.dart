@@ -60,8 +60,7 @@ class PostService {
                 data["postId"] = doc.id;
                 return Post.fromMap(data);
               } catch (e) {
-                // Skip invalid posts and log error
-                print("Error parsing post ${doc.id}: $e");
+                // Skip invalid posts; consider logging in debug builds
                 return null;
               }
             }).whereType<Post>().toList();
@@ -88,7 +87,7 @@ class PostService {
                 data["postId"] = doc.id;
                 return Post.fromMap(data);
               } catch (e) {
-                print("Error parsing post ${doc.id}: $e");
+                // Skip invalid posts; consider logging in debug builds
                 return null;
               }
             }).whereType<Post>().toList();
@@ -111,8 +110,7 @@ class PostService {
                 data["postId"] = doc.id;
                 return Post.fromMap(data);
               } catch (e) {
-                // Skip invalid posts and log error
-                print("Error parsing post ${doc.id}: $e");
+                // Skip invalid posts; consider logging in debug builds
                 return null;
               }
             }).whereType<Post>().toList();

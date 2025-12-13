@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 
 class UserService {
-  final CollectionReference users =
-      FirebaseFirestore.instance.collection("users");
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final CollectionReference users = FirebaseFirestore.instance.collection("users");
 
   // Get raw user map once
   Future<Map<String, dynamic>?> getUser(String uid) async {
@@ -70,7 +70,7 @@ class UserService {
           return snapshot.docs
               .where((doc) => doc.id != excludeUid) // Filter out current user
               .map((doc) {
-                final data = doc.data() as Map<String, dynamic>;
+                final data = doc.data();
                 data["uid"] = doc.id;
                 return data;
               })
