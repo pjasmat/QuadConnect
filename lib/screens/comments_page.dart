@@ -148,23 +148,21 @@ class _CommentsPageState extends State<CommentsPage> {
     final isOwner = currentUid == comment.uid;
     final isLiked = currentUid != null && comment.likes.contains(currentUid);
 
-    return Builder(
-      builder: (context) {
+    return FutureBuilder<Map<String, dynamic>?>(
+      future: UserService().getUser(comment.uid),
+      builder: (context, userSnapshot) {
+        if (!userSnapshot.hasData) {
+          return const SizedBox.shrink();
+        }
+
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
         
-        return FutureBuilder<Map<String, dynamic>?>(
-          future: UserService().getUser(comment.uid),
-          builder: (context, userSnapshot) {
-            if (!userSnapshot.hasData) {
-              return const SizedBox.shrink();
-            }
-
-            final user = userSnapshot.data!;
-            final userName = user["username"] ?? user["name"] ?? "Unknown User";
-            final profilePicUrl = user["photoUrl"] ?? user["profilePicUrl"] ?? "";
-            final timeAgo = timeago.format(comment.createdAt);
-            final isEdited = comment.editedAt != null;
+        final user = userSnapshot.data!;
+        final userName = user["username"] ?? user["name"] ?? "Unknown User";
+        final profilePicUrl = user["photoUrl"] ?? user["profilePicUrl"] ?? "";
+        final timeAgo = timeago.format(comment.createdAt);
+        final isEdited = comment.editedAt != null;
 
         return Container(
           margin: EdgeInsets.only(left: isReply ? 48.0 : 0, bottom: 8),
@@ -416,8 +414,6 @@ class _CommentsPageState extends State<CommentsPage> {
                 ),
             ],
           ),
-        );
-          },
         );
       },
     );
