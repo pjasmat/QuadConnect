@@ -6,6 +6,9 @@ class Comment {
   final String uid;
   final String text;
   final DateTime createdAt;
+  final List<String> likes; // Users who liked this comment
+  final String? parentCommentId; // For replies (null if top-level comment)
+  final DateTime? editedAt; // When comment was last edited
 
   Comment({
     required this.commentId,
@@ -13,6 +16,9 @@ class Comment {
     required this.uid,
     required this.text,
     required this.createdAt,
+    this.likes = const [],
+    this.parentCommentId,
+    this.editedAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -22,6 +28,9 @@ class Comment {
       "uid": uid,
       "text": text,
       "createdAt": Timestamp.fromDate(createdAt),
+      "likes": likes,
+      "parentCommentId": parentCommentId,
+      "editedAt": editedAt != null ? Timestamp.fromDate(editedAt!) : null,
     };
   }
 
@@ -38,13 +47,26 @@ class Comment {
       // Fallback to current time if unknown type
       createdAt = DateTime.now();
     }
-    
+
+    // Handle editedAt
+    DateTime? editedAt;
+    if (map["editedAt"] != null) {
+      if (map["editedAt"] is Timestamp) {
+        editedAt = (map["editedAt"] as Timestamp).toDate();
+      } else if (map["editedAt"] is DateTime) {
+        editedAt = map["editedAt"] as DateTime;
+      }
+    }
+
     return Comment(
       commentId: map["commentId"] ?? "",
       postId: map["postId"] ?? "",
       uid: map["uid"] ?? "",
       text: map["text"] ?? "",
       createdAt: createdAt,
+      likes: List<String>.from(map["likes"] ?? []),
+      parentCommentId: map["parentCommentId"],
+      editedAt: editedAt,
     );
   }
 }

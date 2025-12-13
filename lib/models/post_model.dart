@@ -5,8 +5,11 @@ class Post {
   final String uid;
   final String content;
   final String? imageUrl;
+  final String? videoUrl; // Video URL for video posts
+  final String? backgroundColor; // Background color for text posts (hex color)
   final DateTime createdAt;
   final List<String> likes;
+  final bool isPublic; // true = public, false = private
 
   Post({
     required this.postId,
@@ -14,7 +17,10 @@ class Post {
     required this.content,
     required this.createdAt,
     this.imageUrl,
+    this.videoUrl,
+    this.backgroundColor,
     required this.likes,
+    this.isPublic = true, // Default to public
   });
 
   Map<String, dynamic> toMap() {
@@ -23,8 +29,11 @@ class Post {
       "uid": uid,
       "content": content,
       "imageUrl": imageUrl,
+      "videoUrl": videoUrl,
+      "backgroundColor": backgroundColor,
       "createdAt": Timestamp.fromDate(createdAt),
       "likes": likes,
+      "isPublic": isPublic,
     };
   }
 
@@ -41,14 +50,28 @@ class Post {
       // Fallback to current time if unknown type
       createdAt = DateTime.now();
     }
-    
+
+    // Handle imageUrl, videoUrl, backgroundColor - convert empty strings to null
+    String? imageUrl = map["imageUrl"];
+    if (imageUrl != null && imageUrl.isEmpty) imageUrl = null;
+
+    String? videoUrl = map["videoUrl"];
+    if (videoUrl != null && videoUrl.isEmpty) videoUrl = null;
+
+    String? backgroundColor = map["backgroundColor"];
+    if (backgroundColor != null && backgroundColor.isEmpty)
+      backgroundColor = null;
+
     return Post(
       postId: map["postId"] ?? "",
       uid: map["uid"] ?? "",
       content: map["content"] ?? "",
-      imageUrl: map["imageUrl"],
+      imageUrl: imageUrl,
+      videoUrl: videoUrl,
+      backgroundColor: backgroundColor,
       createdAt: createdAt,
       likes: List<String>.from(map["likes"] ?? []),
+      isPublic: map["isPublic"] ?? true, // Default to public if not set
     );
   }
 }

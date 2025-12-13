@@ -6,6 +6,11 @@ class AppUser {
   final String bio;
   final List<String> followers;
   final List<String> following;
+  final String? website;
+  final String? linkedin;
+  final String? instagram;
+  final String? twitter;
+  final String? github;
 
   AppUser({
     required this.uid,
@@ -15,6 +20,11 @@ class AppUser {
     this.bio = "",
     this.followers = const [],
     this.following = const [],
+    this.website,
+    this.linkedin,
+    this.instagram,
+    this.twitter,
+    this.github,
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +36,11 @@ class AppUser {
       "bio": bio,
       "followers": followers,
       "following": following,
+      "website": website,
+      "linkedin": linkedin,
+      "instagram": instagram,
+      "twitter": twitter,
+      "github": github,
     };
   }
 
@@ -38,6 +53,11 @@ class AppUser {
       bio: map["bio"] ?? "",
       followers: List<String>.from(map["followers"] ?? []),
       following: List<String>.from(map["following"] ?? []),
+      website: map["website"],
+      linkedin: map["linkedin"],
+      instagram: map["instagram"],
+      twitter: map["twitter"],
+      github: map["github"],
     );
   }
 }
