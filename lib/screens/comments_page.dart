@@ -23,6 +23,27 @@ class _CommentsPageState extends State<CommentsPage> {
             child: StreamBuilder<List<Comment>>(
               stream: CommentService().getComments(widget.postId),
               builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text('Error loading comments: ${snapshot.error}'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Trigger rebuild
+                            setState(() {});
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }

@@ -24,13 +24,26 @@ class CommentService {
 
   // Get comments for a post in real time
   Stream<List<Comment>> getComments(String postId) {
+    // Fetch comments and sort client-side to avoid composite index requirement
     return _db
         .collection("comments")
         .where("postId", isEqualTo: postId)
-        .orderBy("createdAt", descending: false)
         .snapshots()
-        .map((snap) => snap.docs
-            .map((doc) => Comment.fromMap(doc.data()))
-            .toList());
+        .map((snap) {
+          final comments = snap.docs.map((doc) {
+            try {
+              final data = doc.data();
+              data["commentId"] = doc.id;
+              return Comment.fromMap(data);
+            } catch (e) {
+              // Skip invalid comments and log error
+              print("Error parsing comment ${doc.id}: $e");
+              return null;
+            }
+          }).whereType<Comment>().toList();
+          // Sort by createdAt ascending (oldest first)
+          comments.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+          return comments;
+        });
   }
 }
