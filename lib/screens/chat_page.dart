@@ -26,11 +26,41 @@ class _ChatPageState extends State<ChatPage> {
             child: StreamBuilder<List<ChatMessage>>(
               stream: _messageService.getMessages(widget.receiverId),
               builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text('Error loading messages: ${snapshot.error}'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {});
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
                 final messages = snapshot.data!;
+
+                if (messages.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      "No messages yet.\nStart the conversation!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  );
+                }
 
                 return ListView.builder(
                   reverse: true,

@@ -33,23 +33,44 @@ class MessageService {
     }
 
     // Firestore doesn't allow multiple whereIn filters, so we need to use two separate queries
+    // Remove orderBy to avoid composite index requirement - we'll sort client-side
     // Query 1: Messages where current user is sender and userId is receiver
     final stream1 = _db
         .collection("messages")
         .where("senderId", isEqualTo: currentId)
         .where("receiverId", isEqualTo: userId)
-        .orderBy("createdAt", descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map((doc) => ChatMessage.fromMap(doc.data())).toList());
+        .map((snap) {
+          return snap.docs.map((doc) {
+            try {
+              final data = doc.data();
+              data["messageId"] = doc.id;
+              return ChatMessage.fromMap(data);
+            } catch (e) {
+              print("Error parsing message ${doc.id}: $e");
+              return null;
+            }
+          }).whereType<ChatMessage>().toList();
+        });
 
     // Query 2: Messages where userId is sender and current user is receiver
     final stream2 = _db
         .collection("messages")
         .where("senderId", isEqualTo: userId)
         .where("receiverId", isEqualTo: currentId)
-        .orderBy("createdAt", descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map((doc) => ChatMessage.fromMap(doc.data())).toList());
+        .map((snap) {
+          return snap.docs.map((doc) {
+            try {
+              final data = doc.data();
+              data["messageId"] = doc.id;
+              return ChatMessage.fromMap(data);
+            } catch (e) {
+              print("Error parsing message ${doc.id}: $e");
+              return null;
+            }
+          }).whereType<ChatMessage>().toList();
+        });
 
     // Combine both streams and merge the results in real-time
     return Stream.multi((controller) {
@@ -66,7 +87,7 @@ class MessageService {
           allMessages[msg.messageId] = msg;
         }
         
-        // Sort by createdAt descending
+        // Sort by createdAt descending (newest first)
         final sortedMessages = allMessages.values.toList()
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
         
@@ -78,7 +99,12 @@ class MessageService {
           messages1 = messages;
           emitCombined();
         },
-        onError: controller.addError,
+        onError: (error) {
+          print("Error in stream1: $error");
+          // Don't add error to controller, just log it and continue with empty list
+          messages1 = [];
+          emitCombined();
+        },
       );
 
       final sub2 = stream2.listen(
@@ -86,7 +112,12 @@ class MessageService {
           messages2 = messages;
           emitCombined();
         },
-        onError: controller.addError,
+        onError: (error) {
+          print("Error in stream2: $error");
+          // Don't add error to controller, just log it and continue with empty list
+          messages2 = [];
+          emitCombined();
+        },
       );
 
       controller.onCancel = () {

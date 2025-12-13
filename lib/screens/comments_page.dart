@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/comment_service.dart';
+import '../services/user_service.dart';
 import '../models/comment_model.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class CommentsPage extends StatefulWidget {
   final String postId;
@@ -51,18 +53,73 @@ class _CommentsPageState extends State<CommentsPage> {
                 final comments = snapshot.data!;
 
                 if (comments.isEmpty) {
-                  return const Center(child: Text("No comments yet"));
+                  return const Center(
+                    child: Text(
+                      "No comments yet.\nBe the first to comment!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  );
                 }
 
                 return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: comments.length,
                   itemBuilder: (context, index) {
-                    final c = comments[index];
-                    return ListTile(
-                      title: Text(c.text),
-                      subtitle: Text(
-                        "Posted at ${c.createdAt.toString().substring(0, 16)}",
-                      ),
+                    final comment = comments[index];
+                    return FutureBuilder<Map<String, dynamic>?>(
+                      future: UserService().getUser(comment.uid),
+                      builder: (context, userSnapshot) {
+                        final userName = userSnapshot.hasData && userSnapshot.data != null
+                            ? (userSnapshot.data!["name"] ?? "Unknown User")
+                            : "Loading...";
+                        final profilePicUrl = userSnapshot.hasData && userSnapshot.data != null
+                            ? (userSnapshot.data!["profilePicUrl"] ?? "")
+                            : "";
+                        final timeAgo = timeago.format(comment.createdAt);
+
+                        return ListTile(
+                          leading: CircleAvatar(
+                            radius: 20,
+                            backgroundImage: profilePicUrl.isNotEmpty
+                                ? NetworkImage(profilePicUrl)
+                                : null,
+                            child: profilePicUrl.isEmpty
+                                ? const Icon(Icons.person, size: 24)
+                                : null,
+                          ),
+                          title: Row(
+                            children: [
+                              Text(
+                                userName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                timeAgo,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              comment.text,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                        );
+                      },
                     );
                   },
                 );
