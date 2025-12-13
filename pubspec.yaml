@@ -53,6 +53,7 @@ dependencies:
   # For handling loading, states, etc (optional but useful)
   provider: ^6.1.2
   timeago: ^3.6.1
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_test:

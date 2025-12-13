@@ -5,22 +5,26 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  // ------------------------------------------------------------
   // REGISTER USER
+  // ------------------------------------------------------------
   Future<String?> registerUser(String name, String email, String password) async {
     try {
-      // Create user with Firebase Auth
+      // Create user
       UserCredential user = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Save user profile in Firestore
+      // Create user profile document
       await _db.collection("users").doc(user.user!.uid).set({
         "uid": user.user!.uid,
         "name": name,
         "email": email,
         "bio": "",
         "profilePicUrl": "",
+        "followers": [],   // <-- ADDED
+        "following": [],   // <-- ADDED
         "createdAt": Timestamp.now(),
       });
 
@@ -30,7 +34,9 @@ class AuthService {
     }
   }
 
+  // ------------------------------------------------------------
   // LOGIN USER
+  // ------------------------------------------------------------
   Future<String?> loginUser(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
@@ -40,11 +46,15 @@ class AuthService {
     }
   }
 
+  // ------------------------------------------------------------
   // LOGOUT
+  // ------------------------------------------------------------
   Future<void> logout() async {
     await _auth.signOut();
   }
 
-  // CURRENT USER
+  // ------------------------------------------------------------
+  // CURRENT USER (Firebase Auth)
+  // ------------------------------------------------------------
   User? get currentUser => _auth.currentUser;
 }
