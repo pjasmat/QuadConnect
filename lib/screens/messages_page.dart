@@ -19,12 +19,19 @@ class _MessagesPageState extends State<MessagesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
     if (currentUserId == null) {
       return Scaffold(
         appBar: AppBar(title: const Text("Messages"), elevation: 0),
-        body: const Center(child: Text("Please log in to view messages")),
+        body: Center(
+          child: Text(
+            "Please log in to view messages",
+            style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+          ),
+        ),
       );
     }
 
@@ -40,16 +47,19 @@ class _MessagesPageState extends State<MessagesPage> {
         stream: _messageService.getConversations(),
         builder: (context, conversationsSnapshot) {
           if (conversationsSnapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text('Error: ${conversationsSnapshot.error}'),
-                ],
-              ),
-            );
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error: ${conversationsSnapshot.error}',
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                        ),
+                      ],
+                    ),
+                  );
           }
 
           if (!conversationsSnapshot.hasData) {
@@ -74,7 +84,10 @@ class _MessagesPageState extends State<MessagesPage> {
                           color: Colors.red,
                         ),
                         const SizedBox(height: 16),
-                        Text('Error: ${usersSnapshot.error}'),
+                        Text(
+                          'Error: ${usersSnapshot.error}',
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                        ),
                       ],
                     ),
                   );
@@ -87,28 +100,30 @@ class _MessagesPageState extends State<MessagesPage> {
                 final users = usersSnapshot.data!;
 
                 if (users.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.people_outline,
                           size: 64,
-                          color: Colors.grey,
+                          color: isDark ? Colors.grey[600] : Colors.grey,
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
                           "No users found",
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey,
+                            color: isDark ? Colors.grey[400] : Colors.grey,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           "Start a conversation with someone!",
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[500] : Colors.grey,
+                          ),
                         ),
                       ],
                     ),
@@ -173,6 +188,9 @@ class _MessagesPageState extends State<MessagesPage> {
     final profilePicUrl = user["photoUrl"] ?? user["profilePicUrl"] ?? "";
     final timeAgo = _formatTime(lastMessageTime);
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -190,7 +208,7 @@ class _MessagesPageState extends State<MessagesPage> {
             // Profile Picture
             CircleAvatar(
               radius: 28,
-              backgroundColor: Colors.grey[300],
+              backgroundColor: isDark ? Colors.grey[700] : Colors.grey[300],
               backgroundImage: profilePicUrl.isNotEmpty
                   ? (profilePicUrl.startsWith('data:image/')
                         ? MemoryImage(base64Decode(profilePicUrl.split(',')[1]))
@@ -212,16 +230,20 @@ class _MessagesPageState extends State<MessagesPage> {
                       Expanded(
                         child: Text(
                           userName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
+                            color: theme.textTheme.bodyLarge?.color,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Text(
                         timeAgo,
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        ),
                       ),
                     ],
                   ),
@@ -234,8 +256,8 @@ class _MessagesPageState extends State<MessagesPage> {
                           style: TextStyle(
                             fontSize: 14,
                             color: unreadCount > 0
-                                ? Colors.black87
-                                : Colors.grey[700],
+                                ? (theme.textTheme.bodyLarge?.color ?? Colors.black87)
+                                : (isDark ? Colors.grey[400] : Colors.grey[700]),
                             fontWeight: unreadCount > 0
                                 ? FontWeight.w500
                                 : FontWeight.normal,
@@ -277,6 +299,8 @@ class _MessagesPageState extends State<MessagesPage> {
   }
 
   Widget _buildUserTile(BuildContext context, Map<String, dynamic> user) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final userName = user["username"] ?? user["name"] ?? "Unknown User";
     final profilePicUrl = user["photoUrl"] ?? user["profilePicUrl"] ?? "";
 
@@ -296,7 +320,7 @@ class _MessagesPageState extends State<MessagesPage> {
           children: [
             CircleAvatar(
               radius: 28,
-              backgroundColor: Colors.grey[300],
+              backgroundColor: isDark ? Colors.grey[700] : Colors.grey[300],
               backgroundImage: profilePicUrl.isNotEmpty
                   ? (profilePicUrl.startsWith('data:image/')
                         ? MemoryImage(base64Decode(profilePicUrl.split(',')[1]))
@@ -310,13 +334,17 @@ class _MessagesPageState extends State<MessagesPage> {
             Expanded(
               child: Text(
                 userName,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
+                  color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
+            Icon(
+              Icons.chevron_right,
+              color: isDark ? Colors.grey[500] : Colors.grey[400],
+            ),
           ],
         ),
       ),
@@ -344,3 +372,4 @@ class _MessagesPageState extends State<MessagesPage> {
     }
   }
 }
+

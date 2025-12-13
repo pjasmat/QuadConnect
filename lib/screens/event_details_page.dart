@@ -335,6 +335,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                               _event.attendees.length >= _event.capacity!)
                         ? Colors.grey[400]
                         : Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
                   ),
                 ),
               ),

@@ -282,6 +282,8 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildSocialLinks(BuildContext context, AppUser user) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final links = <Map<String, dynamic>>[];
 
     if (user.website != null && user.website!.isNotEmpty) {
@@ -320,7 +322,7 @@ class ProfilePage extends StatelessWidget {
       links.add({
         'icon': Icons.code,
         'url': user.github!,
-        'color': Colors.black87,
+        'color': isDark ? Colors.blue : Colors.black87,
         'label': 'GitHub',
       });
     }

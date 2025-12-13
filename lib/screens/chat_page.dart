@@ -236,8 +236,10 @@ class _ChatPageState extends State<ChatPage> {
 
     if (!isMe) return;
 
+    final theme = Theme.of(context);
     final action = await showModalBottomSheet<String>(
       context: context,
+      backgroundColor: theme.colorScheme.surface,
       builder: (context) => Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: Column(
@@ -245,17 +247,29 @@ class _ChatPageState extends State<ChatPage> {
           children: [
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text('Delete for me'),
+              title: Text(
+                'Delete for me',
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+              ),
               onTap: () => Navigator.pop(context, 'delete_for_me'),
             ),
             ListTile(
               leading: const Icon(Icons.delete_forever, color: Colors.red),
-              title: const Text('Delete for everyone'),
+              title: Text(
+                'Delete for everyone',
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+              ),
               onTap: () => Navigator.pop(context, 'delete_for_everyone'),
             ),
             ListTile(
-              leading: const Icon(Icons.cancel),
-              title: const Text('Cancel'),
+              leading: Icon(
+                Icons.cancel,
+                color: theme.iconTheme.color,
+              ),
+              title: Text(
+                'Cancel',
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+              ),
               onTap: () => Navigator.pop(context),
             ),
           ],
@@ -290,12 +304,15 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        iconTheme: IconThemeData(color: theme.iconTheme.color),
         title: FutureBuilder<Map<String, dynamic>?>(
           future: _userService.getUser(widget.receiverId),
           builder: (context, snapshot) {
@@ -337,10 +354,10 @@ class _ChatPageState extends State<ChatPage> {
                       children: [
                         Text(
                           userName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black,
+                            color: theme.appBarTheme.foregroundColor,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -349,7 +366,7 @@ class _ChatPageState extends State<ChatPage> {
                             'typing...',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color: isDark ? Colors.grey[400] : Colors.grey[600],
                               fontStyle: FontStyle.italic,
                             ),
                           )
@@ -358,7 +375,7 @@ class _ChatPageState extends State<ChatPage> {
                             'Active now',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color: isDark ? Colors.grey[400] : Colors.grey[600],
                             ),
                           ),
                       ],
@@ -388,7 +405,10 @@ class _ChatPageState extends State<ChatPage> {
                           color: Colors.red,
                         ),
                         const SizedBox(height: 16),
-                        Text('Error: ${snapshot.error}'),
+                        Text(
+                          'Error: ${snapshot.error}',
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                        ),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
@@ -415,7 +435,7 @@ class _ChatPageState extends State<ChatPage> {
                         Icon(
                           Icons.chat_bubble_outline,
                           size: 64,
-                          color: Colors.grey[400],
+                          color: isDark ? Colors.grey[600] : Colors.grey[400],
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -423,13 +443,15 @@ class _ChatPageState extends State<ChatPage> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey[600],
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           "Start the conversation!",
-                          style: TextStyle(color: Colors.grey[500]),
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[500] : Colors.grey[500],
+                          ),
                         ),
                       ],
                     ),
@@ -471,7 +493,7 @@ class _ChatPageState extends State<ChatPage> {
                               _formatMessageTime(msg.createdAt),
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Colors.grey[600],
+                                color: isDark ? Colors.grey[400] : Colors.grey[600],
                               ),
                             ),
                           ),
@@ -488,10 +510,14 @@ class _ChatPageState extends State<ChatPage> {
           if (_replyingToMessageId != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.grey[100],
+              color: isDark ? Colors.grey[800] : Colors.grey[100],
               child: Row(
                 children: [
-                  Icon(Icons.reply, size: 16, color: Colors.grey[600]),
+                  Icon(
+                    Icons.reply,
+                    size: 16,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -501,7 +527,7 @@ class _ChatPageState extends State<ChatPage> {
                           'Replying to $_replyingToSenderName',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -509,7 +535,7 @@ class _ChatPageState extends State<ChatPage> {
                           _replyingToText ?? '',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -518,7 +544,11 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, size: 18),
+                    icon: Icon(
+                      Icons.close,
+                      size: 18,
+                      color: theme.iconTheme.color,
+                    ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () {
@@ -584,7 +614,7 @@ class _ChatPageState extends State<ChatPage> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? Colors.grey[800] : Colors.white,
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: Row(
@@ -618,7 +648,7 @@ class _ChatPageState extends State<ChatPage> {
           // Input Field
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.colorScheme.surface,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
@@ -634,9 +664,9 @@ class _ChatPageState extends State<ChatPage> {
                   children: [
                     // Plus button for attachments
                     PopupMenuButton<String>(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.add_circle_outline,
-                        color: Colors.grey,
+                        color: theme.iconTheme.color,
                       ),
                       onSelected: (value) {
                         if (value == 'image') {
@@ -671,7 +701,7 @@ class _ChatPageState extends State<ChatPage> {
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: isDark ? Colors.grey[800] : Colors.grey[100],
                           borderRadius: BorderRadius.circular(24),
                         ),
                         child: TextField(
@@ -680,6 +710,9 @@ class _ChatPageState extends State<ChatPage> {
                           textInputAction: TextInputAction.send,
                           onChanged: _onTextChanged,
                           onSubmitted: (_) => _sendMessage(),
+                          style: TextStyle(
+                            color: theme.textTheme.bodyLarge?.color,
+                          ),
                           decoration: InputDecoration(
                             hintText: "Message...",
                             border: InputBorder.none,
@@ -687,7 +720,9 @@ class _ChatPageState extends State<ChatPage> {
                               horizontal: 20,
                               vertical: 10,
                             ),
-                            hintStyle: TextStyle(color: Colors.grey[500]),
+                            hintStyle: TextStyle(
+                              color: isDark ? Colors.grey[500] : Colors.grey[500],
+                            ),
                           ),
                         ),
                       ),
@@ -699,7 +734,7 @@ class _ChatPageState extends State<ChatPage> {
                         _showEmojiPicker
                             ? Icons.keyboard
                             : Icons.emoji_emotions_outlined,
-                        color: Colors.grey[700],
+                        color: theme.iconTheme.color,
                       ),
                       onPressed: () {
                         setState(() {
@@ -711,14 +746,16 @@ class _ChatPageState extends State<ChatPage> {
                     Container(
                       decoration: BoxDecoration(
                         color: _isTyping
-                            ? Theme.of(context).primaryColor
-                            : Colors.grey[300],
+                            ? theme.primaryColor
+                            : (isDark ? Colors.grey[700] : Colors.grey[300]),
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
                         icon: Icon(
                           Icons.send,
-                          color: _isTyping ? Colors.white : Colors.grey[600],
+                          color: _isTyping
+                              ? Colors.white
+                              : (isDark ? Colors.grey[400] : Colors.grey[600]),
                         ),
                         onPressed: _isTyping ? _sendMessage : null,
                       ),
@@ -760,6 +797,9 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildMessageBubble(ChatMessage msg, bool isMe) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return GestureDetector(
       onLongPress: isMe
           ? () {
@@ -788,7 +828,9 @@ class _ChatPageState extends State<ChatPage> {
           margin: const EdgeInsets.only(bottom: 4),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: isMe ? Colors.blue : Colors.white,
+            color: isMe
+                ? theme.primaryColor
+                : (isDark ? Colors.grey[800] : Colors.white),
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(20),
               topRight: const Radius.circular(20),
@@ -812,13 +854,14 @@ class _ChatPageState extends State<ChatPage> {
                   padding: const EdgeInsets.all(8),
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
-                    color: (isMe ? Colors.white : Colors.grey[200])!.withValues(
-                      alpha: 0.3,
-                    ),
+                    color: (isMe
+                            ? Colors.white
+                            : (isDark ? Colors.grey[700] : Colors.grey[200]))!
+                        .withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(8),
                     border: Border(
                       left: BorderSide(
-                        color: isMe ? Colors.white : Colors.blue,
+                        color: isMe ? Colors.white : theme.primaryColor,
                         width: 3,
                       ),
                     ),
@@ -833,7 +876,7 @@ class _ChatPageState extends State<ChatPage> {
                           fontWeight: FontWeight.w600,
                           color: isMe
                               ? Colors.white.withValues(alpha: 0.8)
-                              : Colors.grey[700],
+                              : (isDark ? Colors.grey[400] : Colors.grey[700]),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -843,7 +886,7 @@ class _ChatPageState extends State<ChatPage> {
                           fontSize: 12,
                           color: isMe
                               ? Colors.white.withValues(alpha: 0.7)
-                              : Colors.grey[600],
+                              : (isDark ? Colors.grey[400] : Colors.grey[600]),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -869,15 +912,18 @@ class _ChatPageState extends State<ChatPage> {
                           memCacheHeight: 400,
                           placeholder: (context, url) => Container(
                             height: 200,
-                            color: Colors.grey[200],
+                            color: isDark ? Colors.grey[800] : Colors.grey[200],
                             child: const Center(
                               child: CircularProgressIndicator(),
                             ),
                           ),
                           errorWidget: (context, url, error) => Container(
                             height: 200,
-                            color: Colors.grey[200],
-                            child: const Icon(Icons.broken_image),
+                            color: isDark ? Colors.grey[800] : Colors.grey[200],
+                            child: Icon(
+                              Icons.broken_image,
+                              color: isDark ? Colors.grey[500] : Colors.grey[600],
+                            ),
                           ),
                         ),
                 ),
@@ -887,7 +933,9 @@ class _ChatPageState extends State<ChatPage> {
                 Text(
                   msg.text,
                   style: TextStyle(
-                    color: isMe ? Colors.white : Colors.black87,
+                    color: isMe
+                        ? Colors.white
+                        : (theme.textTheme.bodyLarge?.color ?? Colors.black87),
                     fontSize: 15,
                     height: 1.4,
                   ),

@@ -307,8 +307,12 @@ class _EventsPageState extends State<EventsPage> {
                                         isGoing ? 'Cancel RSVP' : 'RSVP',
                                         style: TextStyle(
                                           color: isGoing
-                                              ? Colors.grey
-                                              : Theme.of(context).primaryColor,
+                                              ? (Theme.of(context).brightness == Brightness.dark
+                                                  ? Colors.white
+                                                  : Colors.grey)
+                                              : (Theme.of(context).brightness == Brightness.dark
+                                                  ? Colors.white
+                                                  : Theme.of(context).primaryColor),
                                         ),
                                       ),
                                       style: OutlinedButton.styleFrom(
