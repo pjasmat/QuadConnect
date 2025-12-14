@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../utils/error_messages.dart';
+import '../utils/validation.dart';
 import 'home_page.dart';
 
 class SignupPage extends StatefulWidget {
@@ -59,7 +61,39 @@ class _SignupPageState extends State<SignupPage> {
 
                       if (name.isEmpty || email.isEmpty || password.isEmpty) {
                         messenger.showSnackBar(
-                          const SnackBar(content: Text("Please fill in all fields")),
+                          const SnackBar(
+                            content: Text("Please fill in all fields"),
+                          ),
+                        );
+                        return;
+                      }
+
+                      // Validate name
+                      final nameError = Validation.validateName(name);
+                      if (nameError != null) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text(nameError)),
+                        );
+                        return;
+                      }
+
+                      // Validate email format
+                      if (!Validation.isValidEmail(email)) {
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text("Please enter a valid email address"),
+                          ),
+                        );
+                        return;
+                      }
+
+                      // Validate password strength
+                      final passwordError = Validation.validatePassword(
+                        password,
+                      );
+                      if (passwordError != null) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text(passwordError)),
                         );
                         return;
                       }
@@ -67,8 +101,11 @@ class _SignupPageState extends State<SignupPage> {
                       setState(() => loading = true);
 
                       try {
-                        final result =
-                            await _auth.registerUser(name, email, password);
+                        final result = await _auth.registerUser(
+                          name,
+                          email,
+                          password,
+                        );
 
                         if (!mounted) return;
 
@@ -77,12 +114,25 @@ class _SignupPageState extends State<SignupPage> {
                             MaterialPageRoute(builder: (_) => const HomePage()),
                           );
                         } else {
-                          messenger.showSnackBar(SnackBar(content: Text(result)));
+                          // Use ErrorMessages utility for user-friendly error messages
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                ErrorMessages.getUserFriendlyError(result),
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
                         }
                       } catch (e) {
                         if (!mounted) return;
                         messenger.showSnackBar(
-                          SnackBar(content: Text("Sign up failed: $e")),
+                          SnackBar(
+                            content: Text(
+                              ErrorMessages.getUserFriendlyError(e),
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
                         );
                       } finally {
                         if (mounted) {

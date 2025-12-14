@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../utils/error_messages.dart';
+import '../utils/validation.dart';
 import 'signup_page.dart';
+import 'forgot_password_page.dart';
 import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -25,8 +28,10 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("QuadConnect",
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+            const Text(
+              "QuadConnect",
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 40),
 
             TextField(
@@ -55,7 +60,19 @@ class _LoginPageState extends State<LoginPage> {
 
                       if (email.isEmpty || password.isEmpty) {
                         messenger.showSnackBar(
-                          const SnackBar(content: Text("Please enter email and password")),
+                          const SnackBar(
+                            content: Text("Please enter email and password"),
+                          ),
+                        );
+                        return;
+                      }
+
+                      // Validate email format
+                      if (!Validation.isValidEmail(email)) {
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text("Please enter a valid email address"),
+                          ),
                         );
                         return;
                       }
@@ -69,14 +86,28 @@ class _LoginPageState extends State<LoginPage> {
 
                         if (result == null) {
                           navigator.pushReplacement(
-                              MaterialPageRoute(builder: (_) => const HomePage()));
+                            MaterialPageRoute(builder: (_) => const HomePage()),
+                          );
                         } else {
-                          messenger.showSnackBar(SnackBar(content: Text(result)));
+                          // Use ErrorMessages utility for user-friendly error messages
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                ErrorMessages.getUserFriendlyError(result),
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
                         }
                       } catch (e) {
                         if (!mounted) return;
                         messenger.showSnackBar(
-                          SnackBar(content: Text("Login failed: $e")),
+                          SnackBar(
+                            content: Text(
+                              ErrorMessages.getUserFriendlyError(e),
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
                         );
                       } finally {
                         if (mounted) {
@@ -92,9 +123,23 @@ class _LoginPageState extends State<LoginPage> {
             TextButton(
               onPressed: () {
                 Navigator.push(
-                    context, MaterialPageRoute(builder: (_) => const SignupPage()));
+                  context,
+                  MaterialPageRoute(builder: (_) => const SignupPage()),
+                );
               },
               child: const Text("Create an account"),
+            ),
+
+            const SizedBox(height: 10),
+
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
+                );
+              },
+              child: const Text("Forgot Password?"),
             ),
           ],
         ),

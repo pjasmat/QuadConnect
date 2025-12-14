@@ -47,9 +47,10 @@ class AppUser {
   factory AppUser.fromMap(Map<String, dynamic> map) {
     return AppUser(
       uid: map["uid"],
-      username: map["username"] ?? "",
+      // Support both "username" and "name" for backward compatibility
+      username: map["username"] ?? map["name"] ?? "",
       email: map["email"] ?? "",
-      photoUrl: map["photoUrl"],
+      photoUrl: map["photoUrl"] ?? map["profilePicUrl"],
       bio: map["bio"] ?? "",
       followers: List<String>.from(map["followers"] ?? []),
       following: List<String>.from(map["following"] ?? []),
